@@ -5,14 +5,24 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 
 const app = express();
-
+const allowedOrigins = process.env.ORIGIN?.split(",") || [];
 // Core Middlewares
 app.use(
   cors({
     origin(origin, callback) {
-      const allowed = process.env.ORIGIN;
-      if (allowed.includes(origin)) callback(null, true);
-      else callback(new Error("Not allowed by CORS"));
+      // allow no-origin (Postman etc)
+      if (!origin) return callback(null, true);
+
+      // allow all if "*"
+      if (allowedOrigins.includes("*")) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
     },
   }),
 );
